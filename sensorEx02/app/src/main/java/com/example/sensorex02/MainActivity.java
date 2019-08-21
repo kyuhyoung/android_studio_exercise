@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -44,8 +45,9 @@ public class MainActivity extends AppCompatActivity {
         Button button = (Button)findViewById(R.id.btn);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-
+            public void onClick(View v)
+            {
+                requestCurrentLocation();
             }
         });
     }
@@ -79,6 +81,32 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
+            Location lastLocation = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(null != lastLocation)
+            {
+                showCurrentLocation(lastLocation);
+            }
+            manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDist, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    showCurrentLocation(location);
+                }
+
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String provider) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String provider) {
+
+                }
+            });
 
         }
         catch (SecurityException e)
@@ -90,6 +118,6 @@ public class MainActivity extends AppCompatActivity {
     private void showCurrentLocation(Location location)
     {
         LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
-
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentPoint, 15));
     }
 }
