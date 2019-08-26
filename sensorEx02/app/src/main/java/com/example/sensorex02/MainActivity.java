@@ -15,12 +15,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    GoogleMap map;
     SupportMapFragment mapFragment;
+    GoogleMap map;
+    MarkerOptions myLocationMarker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
             {
                 Log.d(TAG, "GoogleMap is ready.");
                 map = googleMap;
+                //map.setMyLocationEnabled(true);
+                //map.getUiSettings().setMyLocationButtonEnabled(false);
             }
         });
         try
@@ -119,5 +126,37 @@ public class MainActivity extends AppCompatActivity {
     {
         LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentPoint, 15));
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        showMyLocationMarker(location);
+    }
+
+    private void showMyLocationMarker(Location location)
+    {
+        if(null == myLocationMarker)
+        {
+            myLocationMarker = new MarkerOptions();
+            myLocationMarker.position(new LatLng(location.getLatitude(), location.getLongitude()));
+            myLocationMarker.title("현재 나의 위치");
+            myLocationMarker.snippet(" : 테크노 밸리");
+            myLocationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.pill_icon));
+            map.addMarker(myLocationMarker);
+        }
+    }
+
+    protected void onResume()
+    {
+        super.onResume();
+        if(map != null)
+        {
+            map.setMyLocationEnabled(true);
+        }
+    }
+    protected void onPause()
+    {
+        super.onPause();
+        if(map != null)
+        {
+            map.setMyLocationEnabled(false);
+        }
     }
 }
