@@ -1,6 +1,10 @@
 package com.example.sensorex02;
 
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -8,7 +12,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,7 +31,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     SupportMapFragment mapFragment;
     GoogleMap map;
+    private CompassView mCV;
+    private SensorManager mSM;
+    private boolean mCE;
     MarkerOptions myLocationMarker;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +69,21 @@ public class MainActivity extends AppCompatActivity {
                 requestCurrentLocation();
             }
         });
+
+        mSM = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+
+        mCV = new CompassView(this);
+        mCV.setVisibility(View.VISIBLE);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+
+        ((ViewGroup)mapFragment.getView()).addView(mCV, params);
+        mCE = true;
     }
+
 
     private void requestCurrentLocation()
     {
@@ -150,6 +176,12 @@ public class MainActivity extends AppCompatActivity {
         {
             map.setMyLocationEnabled(true);
         }
+
+        if(mCE)
+        {
+            Sensor os = mSM.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+            mSM.registerListener(mL, os, SensorManager.SENSOR_DELAY_UI);
+        }
     }
     protected void onPause()
     {
@@ -158,5 +190,30 @@ public class MainActivity extends AppCompatActivity {
         {
             map.setMyLocationEnabled(false);
         }
+
+        if(mCE)
+        {
+            mSM.unregisterListener(mL);
+        }
     }
+
+    private final SensorEventListener mL = new SensorEventListener() {
+
+        private int orientationValue = -1;
+
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+
+        public void onSensorChanged(SensorEvent event) {
+            if(orientationValue < 0)
+            {
+                orientationValue = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+            }
+            mCV.setAzimuth(90 + orientationValue);
+            mCV.invalidate();
+        }
+
+
+    };
 }
