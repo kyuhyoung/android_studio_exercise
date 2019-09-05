@@ -1,6 +1,8 @@
 package com.example.sensorex02;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -164,7 +166,14 @@ public class MainActivity extends AppCompatActivity {
             myLocationMarker.position(new LatLng(location.getLatitude(), location.getLongitude()));
             myLocationMarker.title("현재 나의 위치");
             myLocationMarker.snippet(" : 테크노 밸리");
-            myLocationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.pill_icon));
+
+            int height = 100, width = 100;
+            BitmapDrawable bitmapdraw = (BitmapDrawable)getResources().getDrawable(R.drawable.pill_icon);
+            Bitmap b = bitmapdraw.getBitmap();
+            Bitmap smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
+
+            //myLocationMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.pill_icon));
+            myLocationMarker.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
             map.addMarker(myLocationMarker);
         }
     }
